@@ -29,9 +29,6 @@ current_file = 1;
 
 %% test
 for fid = 1:length(files)
-    if(files(fid).patient ~=12)
-        continue;
-    end;
     file_name = files(fid).file_name;
     S = FileContent(files(fid).patient, file_name);
     M = [];
@@ -40,7 +37,7 @@ for fid = 1:length(files)
     input_answ = [];
     %% Decimating output, getting rid of data we dont need.
     for ch = 1: length(celldata)
-        helper = files(current_file).channel_nr;
+        helper = files(fid).channel_nr;
         if(helper.(celldata{ch, 1}) == 0 )
             continue;
         end;
