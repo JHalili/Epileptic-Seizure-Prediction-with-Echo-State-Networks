@@ -19,6 +19,7 @@ classdef FileContent
                 end;
              
             obj.file_name = sprintf(formatSpec, chid, file_nm)
+            obj.file_name
             [obj.hdr, obj.record] = edfread(obj.file_name);
         end
     end    

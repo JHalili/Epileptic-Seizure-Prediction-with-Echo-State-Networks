@@ -21,31 +21,28 @@ channels = struct ( 'FP1_F7','FP1_F7' ,'F7_T7','F7_T7', 'T7_P7','T7_P7', ...
     'T8_P8', 'T8_P8', 'P8_O2','P8_O2', 'FZ_CZ','FZ_CZ',  'CZ_PZ', 'CZ_PZ', ...
     'P7_T7','P7_T7', 'T7_FT9','T7_FT9', 'FT9_FT10','FT9_FT10', 'FT10_T8', 'FT10_T8');
 
-celldata = struct2cell(channels);
-
+% = cellstr(channels);
 input_answ = [];
 channelSim_computed = 0;
 current_file = 1;
 
 %% test
-for fid = 1:length(files)
-    if(files(fid).patient ~=12)
-        continue;
-    end;
-    file_name = files(fid).file_name;
+for fid = 4:length(files)
+    current_file = 4;
+    file_name = files(current_file).file_name;
     S = FileContent(files(fid).patient, file_name);
     M = [];
     data = [];
     A = [];
     input_answ = [];
     %% Decimating output, getting rid of data we dont need.
-    for ch = 1: length(celldata)
+    for ch = 1:length(channels)
         helper = files(current_file).channel_nr;
-        if(helper.(celldata{ch, 1}) == 0 )
+        if(helper.(channels(ch)) == 0 )
             continue;
         end;
-        j = helper.(celldata{ch, 1});
-        fprintf('%s channel in %d, file %s\n', celldata{ch, 1}, j, files(current_file).file_name );
+        j = helper(ch);
+        fprintf('%d channel, file %s\n', j,file_name );
         
         %% apply notch filter to remove noise 50 OR 60 Hz
         % data is measured in the US using US devices, thus noise is
@@ -78,8 +75,8 @@ for fid = 1:length(files)
         disp 'computing channel similarity matrix';
         channel_correlation = [];
         helper = [];
-        for ch1=1:size(A, 1)
-            for ch2=1:size(A, 1)
+        for ch1=1:channel_nr
+            for ch2=1:channel_nr
                 a= corrcoef(A(ch1, :), A(ch2, :));
                 helper = [helper, a(1,2)];
             end;

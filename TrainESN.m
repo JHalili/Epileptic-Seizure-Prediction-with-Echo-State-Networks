@@ -45,7 +45,8 @@ for i=1:nr_channels
         W_in_t(current_index, : )=Y(i, (j-1)*resSize+1:j*resSize);
     end;
 end;
-W_in = W_in_t';
+W_in = horzcat(randn(resSize, 1),W_in_t');
+
 W_back = rand(resSize, teacherSize);
 
 %% Teacher output, initial res and data assignement
@@ -78,7 +79,7 @@ for i=1:initLen-1
             S = FilteredFileContent(chid, file_name);
             data_length_size = size(S.data,2)
             for ii=1:size(S.data, 2)
-                X = tanh(W_in * S.data(:,ii) + W*X + W_back *opt);
+                X = tanh(W_in * vertcat(1, S.data(:,ii)) + W*X + bias);
                 otp = S.teacher(ii);
             end;
         end;
@@ -136,12 +137,8 @@ for i = 1: cvLen
                 if idxTrain(current_file) == 1
                     disp 'computing M AND T';
                     for jj = 1 : size(S.data, 2)
-                        if(jj == 1000)
-                            fprintf('%d-', jj);
-                        end;
-                        X_old = X;
-                        X = tanh(W_in * S.data(:, jj) + W*X + W_back * opt + bias);
-                        vect = vertcat(1, X_old ,S.data(:, jj));
+                        X = tanh(W_in * S.data(:, jj) + W*X  + bias);
+                        vect = vertcat(S.data(:, jj), X);
                         M = M + vect * vect';       % collecting X data into M
                         T = T + vect * opt;          % collecting output data into T
                         otp = S.teacher(jj);
@@ -186,7 +183,7 @@ for i = 1: cvLen
                 else
                     for jj = 1 : size(S.data, 2)
                         X_old = X;
-                        X = tanh(W_in * S.data(:, jj) + W*X + W_back * opt + bias);
+                        X = tanh(W_in * S.data(:, jj) + W*X + bias);
                         vect = vertcat(1, X_old, S.data(:, jj));
                         
                         generated_output(jj) = W_out*vect;

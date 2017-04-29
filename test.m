@@ -25,14 +25,26 @@
 % Showing filtered data
 
 
-filtered_data_show = 1;
-if(filtered_data_show)
-    S = FilteredFileContent(1, 'chb01_04.mat');
-    S.plotContent(1, 4);
-end;
+% filtered_data_show = 1;
+% if(filtered_data_show)
+%     S = FilteredFileContent(1, 'chb01_04.mat');
+%     S.plotContent(1, 4);
+% end;
 % [l,s,a,b] = folderExplore();
 % [start, length] = get_seizure_period(sprintf('Datach/ch01/%s',a(1, 1).name));
+a = 1;
+b = 2;
+c = [2, 3, 4, 2, 3, 2];
+d = 'ana';
+patient(1).name = 'John Doe';
+patient(1).billing = 127.00;
+patient(1).test = [79, 75, 73; 180, 178, 177.5; 220, 210, 205];
 
-
-
+patient(2).name = 'John Doe';
+patient(2).billing = 127.00;
+patient(2).test = [79, 75, 73; 180, 178, 177.5; 220, 210, 205];
+patient
+s = struct('a', a, 'b', b, 'c', c, 'd', d);
+c = struct2cell(s);
+d = cell2struct(c,{ 'a', 'b', 'c', 'd'});
 
