@@ -17,17 +17,13 @@ classdef FilteredFileContent
             else
                 formatSpec = 'Datach_filtered/%s/ch%d/%s';
             end;
-            S = load(sprintf(formatSpec,'data', chid, file_name));
+            S = load(sprintf(formatSpec,'test', chid, file_name));
             %S = memmapfile(sprintf(formatSpec,'data', chid, file_name));
             
             names = fieldnames(S);
             obj.data = S.(names{1}).data;
-            
-            S_out = load(sprintf(formatSpec, 'gaussian', chid, file_name));
-            %S_out = memmapfile(sprintf(formatSpec, 'gaussian', chid, file_name));
-            names = fieldnames(S_out);
-            obj.teacher = S_out.(names{1}).teacher;
-            
+            obj.teacher = S.(names{1}).teacher;
+                     
         end
         function plotContent(obj, channel_nr_start, channel_nr)
             disp 'Plotting now';

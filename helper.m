@@ -1,14 +1,28 @@
-function saveToFile(data, file, fs, decimationFactor)
-%% Check for seizure
+ch3_files = ['chb03_01_seizure1.mat', 'chb03_02_seizure1.mat', 'chb03_34_seizure1.mat',...
+'chb03_03_seizure1.mat', 'chb03_35_seizure1.mat', 'chb03_04_seizure1.mat',... 
+'chb03_36_seizure1.mat'];
+
+ch4_files = ['chb24_01_seizure1.mat', 'chb24_01_seizure2.mat', 'chb24_17_seizure1.mat', ...
+'chb24_09_seizure1.mat', 'chb24_03_seizure1.mat', 'chb24_03_seizure2.mat', ....
+'chb24_04_seizure1.mat', 'chb24_11_seizure1.mat', 'chb24_04_seizure2.mat', ...
+'chb24_04_seizure3.mat', 'chb24_13_seizure1.mat', 'chb24_14_seizure1.mat', ...
+'chb24_06_seizure1.mat', 'chb24_15_seizure1.mat','chb24_07_seizure1.mat', ...
+'chb24_21_seizure1.mat'];
+
+files_all = folderExplore('Datach');
+for i = 1: length(files_all)
+    if(files_all(i).patient ~= 3 && files_all(i).patient ~= 24)
+        continue;
+    end;
+    
+    
 fformatSpec = '%s%s';
 ten_min_thresh = 10*60*fs;
 one_min_thresh = floor(ten_min_thresh / 10);
-sigma = one_min_thresh;
+sigma = ten_min_thresh;
 % take lenght of any of the frequency bands
 input_answ = zeros(1, size(data, 2));
-input_answ_seizure = zeros(1, size(data, 2));
 current_pos = 1;
-type_seizure_detect = 'seizure_detector';
 type_seizure_predict = 'seizure_predictor';
 if(file.patient < 10)
     formatSpecFile = 'Datach_filtered/%s/ch0%d/%s.mat';
@@ -42,27 +56,4 @@ if(file.nr_seizures ~=0 )
         disp 'saved';
         current_pos = end_point;
     end;
-else
-    %only save data in small amounts (ten min data)
-    disp 'not a seizure file';
-    name_count = 1;
-    i = 1;
-    while(i < size(data, 2))
-        if( i + ten_min_thresh > size(data, 2))
-            s = struct('data', data(:, i:end),...
-                        'teacher', input_answ(:, i: end));
-        else
-            s = struct('data', data(:, i: i+ten_min_thresh-1), ...
-                       'teacher', input_answ(:, i: i+ten_min_thresh-1));
-        end;
-        i = i+ten_min_thresh;
-        fileName = sprintf('%s_%d',file.file_name(1, 1:end-4), name_count)
-        filteredFileName = sprintf(formatSpecFile, type_seizure_predict, ...
-                                                    file.patient, fileName);
-        save(filteredFileName, 's');
-        name_count = name_count +1;
-    end;   
 end;
-
-end
-

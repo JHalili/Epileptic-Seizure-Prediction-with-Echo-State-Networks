@@ -97,7 +97,7 @@ for k = 2 : numberOfFolders
             file_line = fgets(fileID);
             nr_seizures = sscanf(file_line, formatSpec);
             seizure_start = zeros(1, nr_seizures);
-            seizure_length = zeros(1, nr_seizures);
+            seizure_end = zeros(1, nr_seizures);
             
             for ii = 1: nr_seizures
                 formatSpec = 'Seizure %d Start Time: %d seconds';
@@ -108,14 +108,14 @@ for k = 2 : numberOfFolders
                 s2 = sscanf(file_line, formatSpec);
                 
                 seizure_start(1, ii) = s1(2, 1);
-                seizure_length(1, ii) = s2(2, 1);
+                seizure_end(1, ii) = s2(2, 1);
             end;
             file_properties(file_counter).file_name = file_name;
             file_properties(file_counter).start_time = start_time;
             file_properties(file_counter).end_time = end_time;
             file_properties(file_counter).nr_seizures = nr_seizures;
             file_properties(file_counter).seizure_start = seizure_start;
-            file_properties(file_counter).seizure_length = seizure_length;
+            file_properties(file_counter).seizure_end = seizure_end;
             file_properties(file_counter).patient = i;
             file_properties(file_counter).channel_nr = chnl;
             file_line = fgets(fileID);

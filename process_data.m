@@ -5,7 +5,7 @@ files = folderExplore('Datach');
 decimationFactor = 100;
 Fs = 256 ;           % Sampling frequency
 Fs1 = 256;
-averagingWindow = 10000;
+averagingWindow =  10000;
 %% info on frequency bands
 % delta = (0 - 4 Hz),
 % theta (4 - 8 Hz)  ,
@@ -18,21 +18,27 @@ channels = struct ( 'FP1_F7','FP1_F7' ,'F7_T7','F7_T7', 'T7_P7','T7_P7', ...
     'P7_O1','P7_O1', 'FP1_F3', 'FP1_F3',  'F3_C3', 'F3_C3', ...
     'C3_P3','C3_P3', 'P3_O1','P3_O1', 'FP2_F4', 'FP2_F4', 'F4_C4','F4_C4', ...
     'C4_P4','C4_P4', 'P4_O2','P4_O2', 'FP2_F8', 'FP2_F8', 'F8_T8','F8_T8', ...
-    'T8_P8', 'T8_P8', 'P8_O2','P8_O2', 'FZ_CZ','FZ_CZ',  'CZ_PZ', 'CZ_PZ', ...
-    'P7_T7','P7_T7', 'T7_FT9','T7_FT9', 'FT9_FT10','FT9_FT10', 'FT10_T8', 'FT10_T8');
+    'T8_P8', 'T8_P8', 'P8_O2','P8_O2', 'FZ_CZ','FZ_CZ',  'CZ_PZ', 'CZ_PZ'); 
+
 
 celldata = struct2cell(channels);
 
 input_answ = [];
 channelSim_computed = 0;
 current_file = 1;
-
+frequency_bands = setUpFrequencyBands();
 %% test
 for fid = 1:length(files)
+    if(files(fid).patient == 12)
+        continue;
+    end;
+    if(files(fid).patient ~= 14 && files(fid).patient ~=15)
+        continue;
+    end;
     file_name = files(fid).file_name;
     S = FileContent(files(fid).patient, file_name);
     M = [];
-    data = [];
+    data = zeros(5*length(celldata), size(resample(S.record(1, :),1,decimationFactor), 2));
     A = [];
     input_answ = [];
     %% Decimating output, getting rid of data we dont need.
@@ -42,28 +48,28 @@ for fid = 1:length(files)
             continue;
         end;
         j = helper.(celldata{ch, 1});
-        fprintf('%s channel in %d, file %s\n', celldata{ch, 1}, j, files(current_file).file_name );
+        fprintf('%s channel in %d, file %s\n', celldata{ch, 1}, j, files(fid).file_name );
         
         %% apply notch filter to remove noise 50 OR 60 Hz
         % data is measured in the US using US devices, thus noise is
         % expected to be 60 Hz
-        S_decimated = notchFilter(S.record(j, :), Fs/decimationFactor, 60);
+        S_decimated = notchFilter(S.record(j, :), Fs, 60);
         %% separating into frequency bands and collecting singal energy for each band
-        delta = deltaBandFilter(S_decimated, Fs, averagingWindow);
-        disp 'delta done .. theta';
-        theta = thetaBandFilter(S_decimated, Fs, averagingWindow);
-        disp 'theta done ... alpha';
-        alpha = alphaBandFilter(S_decimated, Fs, averagingWindow);
-        disp 'alpha done .. beta';
-        beta  =  betaBandFilter(S_decimated, Fs, averagingWindow);
-        disp 'beta done .. gamma';
-        gamma =  gammaBandFilter(S_decimated, Fs, averagingWindow);
-        disp 'gamma done .. hurray';
-        data = [data; resample(delta, 1,decimationFactor)];
-        data = [data; resample(theta, 1,decimationFactor)];
-        data = [data; resample(alpha, 1,decimationFactor)];
-        data = [data; resample(beta, 1,decimationFactor)];
-        data = [data; resample(gamma, 1,decimationFactor)];
+        delta = frequencyBandFilter(frequency_bands.delta, S_decimated, Fs, averagingWindow);
+        %disp 'delta done .. theta';
+        theta = frequencyBandFilter(frequency_bands.theta, S_decimated, Fs, averagingWindow);
+        %disp 'theta done ... alpha';
+        alpha = frequencyBandFilter(frequency_bands.alpha, S_decimated, Fs, averagingWindow);
+        %disp 'alpha done .. beta';
+        beta  =  frequencyBandFilter(frequency_bands.beta, S_decimated, Fs, averagingWindow);
+        %disp 'beta done .. gamma';
+        gamma =  frequencyBandFilter(frequency_bands.gamma, S_decimated, Fs, averagingWindow);
+        %disp 'gamma done .. hurray';
+        data((ch-1)*5+1, :) =  resample(delta, 1,decimationFactor);
+        data((ch-1)*5+2, :) =  resample(theta, 1,decimationFactor);
+        data((ch-1)*5+3, :) =  resample(alpha, 1,decimationFactor);
+        data((ch-1)*5+4, :) =  resample(beta, 1,decimationFactor);
+        data((ch-1)*5+5, :) =  resample(gamma, 1,decimationFactor);
         if(channelSim_computed == 0)
             A = [A; S_decimated(1:300)];
         end;
@@ -91,9 +97,8 @@ for fid = 1:length(files)
     end;
     
     Fs1 = Fs/decimationFactor;
-    %Save input and response in a file
-    
-    %saveToFile(data, 'gaussian', files(fid), Fs1);
+    %Save preprocessed content and output in files    
+    saveToFile(data, files(fid), Fs1, decimationFactor);
 end;
 
 
